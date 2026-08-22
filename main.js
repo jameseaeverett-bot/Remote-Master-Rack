@@ -1,0 +1,15 @@
+const text = (selector, value) => document.querySelector(selector).textContent = value;
+document.title = siteContent.browserTitle;
+text('[data-content="eyebrow"]', siteContent.eyebrow);
+text('[data-content="hero-title"]', siteContent.heroTitle);
+text('[data-content="hero-body"]', siteContent.heroBody);
+text('[data-content="status"]', siteContent.statusText);
+text('[data-content="primary"]', siteContent.primaryButton);
+text('[data-content="secondary"]', siteContent.secondaryButton);
+text('[data-content="waitlist-title"]', siteContent.waitlistTitle);
+text('[data-content="waitlist-body"]', siteContent.waitlistBody);
+document.querySelector('.features').innerHTML = siteContent.features.map(([title, body], index) => `<article><p class="eyebrow">0${index + 1}</p><h2>${title}</h2><p>${body}</p></article>`).join('');
+const dialog = document.querySelector('.waitlist');
+document.querySelector('[data-open-modal]').addEventListener('click', () => dialog.showModal());
+document.querySelectorAll('[data-close-modal]').forEach((button) => button.addEventListener('click', () => dialog.close()));
+dialog.addEventListener('click', (event) => { if (event.target === dialog) dialog.close(); });
