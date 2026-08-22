@@ -1,23 +1,22 @@
-# RMR Website
+# Remote Master Rack — Holding Page & Owner Portal
 
-Static holding page for Remote Master Rack, ready for GitHub Pages.
+A small static holding page for Remote Master Rack, plus the first Owner Portal module: Website Content.
 
-## Change wording
+## Edit public wording
 
-1. Open `site-content.js`.
-2. Edit the wording inside `siteContent`.
-3. Save.
-4. Commit and push.
-5. GitHub Pages updates automatically.
+1. Open `owner-portal.html` through the local preview server.
+2. Edit the fields in Website Content and choose **Save content file**.
+3. Select this project’s `website-content.json` when prompted.
+4. Save, commit, and push.
 
 ## Preview locally
 
-Open `index.html` directly in a browser. No build or server is required. If preferred, run `python3 -m http.server` from this folder and visit the address it prints.
+From this folder, run:
 
-## Codex workflow
+```bash
+python3 -m http.server 4173
+```
 
-Pull latest → edit → preview → commit → push.
+Then open `http://localhost:4173/owner-portal.html` to use the Owner Portal.
 
-## Publishing
-
-After connecting this repository to GitHub, enable Pages from **Settings → Pages**, choose **Deploy from a branch**, then select **main** and **/(root)**. No custom domain is configured.
+The public homepage reads `website-content.json` dynamically. Future Owner Portal modules belong beside `owner-portal.html` and can use the existing module navigation without redesigning the shell.
