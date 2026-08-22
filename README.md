@@ -1,22 +1,26 @@
-# Remote Master Rack — Holding Page & Owner Portal
+# Remote Master Rack — Website & Owner Portal
 
-A small static holding page for Remote Master Rack, plus the first Owner Portal module: Website Content.
+The public holding page reads `website-content.json`. The Owner Portal provides drafts and direct publishing for routine wording changes.
 
-## Edit public wording
+## Daily publishing
 
-1. Open `owner-portal.html` through the local preview server.
-2. Edit the fields in Website Content and choose **Save content file**.
-3. Select this project’s `website-content.json` when prompted.
-4. Save, commit, and push.
+1. Open **RMR Owner Portal** from `~/Desktop/RMR Launchers`.
+2. Edit the Website Content fields.
+3. Use **Save Draft** whenever you want to keep a local draft.
+4. Use **Publish to Website** to commit the content to GitHub and trigger GitHub Pages.
 
-## Preview locally
+## One-time secure publishing setup
 
-From this folder, run:
+The Owner Portal service runs locally and never sends a GitHub token to browser-side JavaScript. Store a GitHub fine-grained personal access token in macOS Keychain with **Contents: Read and write** access to `jameseaeverett-bot/Remote-Master-Rack`:
 
 ```bash
-python3 -m http.server 4173
+security add-generic-password -U -a "$USER" -s RMR_GITHUB_TOKEN -w
 ```
 
-Then open `http://localhost:4173/owner-portal.html` to use the Owner Portal.
+Paste the token when prompted. The RMR launchers retrieve it only into the local publishing service process. Do not put tokens in `portal-config.js`, `website-content.json`, or the Git repository.
 
-The public homepage reads `website-content.json` dynamically. Future Owner Portal modules belong beside `owner-portal.html` and can use the existing module navigation without redesigning the shell.
+GitHub Pages must already be configured to deploy `main` from `/(root)`.
+
+## Local service
+
+`owner_portal_service.py` serves the website and the secure `/api/publish` endpoint only on `127.0.0.1:4173`.
