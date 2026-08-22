@@ -86,4 +86,4 @@ class Handler(SimpleHTTPRequestHandler):
 
 if __name__ == "__main__":
     os.chdir(ROOT)
-    ThreadingHTTPServer(("127.0.0.1", 4173), Handler).serve_forever()
+    ThreadingHTTPServer(("127.0.0.1", int(os.environ.get("RMR_OWNER_PORTAL_PORT", "4173"))), Handler).serve_forever()
