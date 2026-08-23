@@ -66,6 +66,29 @@ def live_content():
     with urllib.request.urlopen(request, timeout=20) as response:
         return normalise_content(json.loads(response.read().decode("utf-8")))
 
+def git_run(*args):
+    return subprocess.run(["/usr/bin/git", *args], cwd=ROOT, capture_output=True, text=True)
+
+def sync_local_preview():
+    """Advance the local development copy only when doing so is safe."""
+    status = git_run("status", "--porcelain")
+    if status.returncode != 0:
+        return {"status": "unavailable", "message": "Local preview sync could not be checked. Your local files were left untouched."}
+    if status.stdout.strip():
+        return {"status": "skipped", "message": "Local preview is ahead/modified. Automatic sync skipped."}
+    if git_run("fetch", "origin", "main").returncode != 0:
+        return {"status": "unavailable", "message": "GitHub publish succeeded, but the local preview could not be checked. Your local files were left untouched."}
+    local_head, remote_head = git_run("rev-parse", "HEAD"), git_run("rev-parse", "origin/main")
+    if local_head.returncode != 0 or remote_head.returncode != 0:
+        return {"status": "unavailable", "message": "GitHub publish succeeded, but the local preview could not be checked. Your local files were left untouched."}
+    if local_head.stdout.strip() == remote_head.stdout.strip():
+        return {"status": "current", "message": "Local preview is already in sync."}
+    if git_run("merge-base", "--is-ancestor", "HEAD", "origin/main").returncode != 0:
+        return {"status": "skipped", "message": "Local preview is ahead/modified. Automatic sync skipped."}
+    if git_run("pull", "--ff-only", "origin", "main").returncode == 0:
+        return {"status": "synced", "message": "Local preview safely synced. It was not opened or refreshed."}
+    return {"status": "skipped", "message": "Local preview is ahead/modified. Automatic sync skipped."}
+
 class Handler(SimpleHTTPRequestHandler):
     def end_headers(self):
         if self.headers.get("Origin") == ALLOWED_ORIGIN: self.send_header("Access-Control-Allow-Origin", ALLOWED_ORIGIN); self.send_header("Vary", "Origin")
@@ -74,7 +97,7 @@ class Handler(SimpleHTTPRequestHandler):
         encoded = json.dumps(payload).encode(); self.send_response(status); self.send_header("Content-Type", "application/json; charset=utf-8"); self.send_header("Content-Length", str(len(encoded))); self.end_headers(); self.wfile.write(encoded)
     def do_OPTIONS(self): self.send_response(HTTPStatus.NO_CONTENT); self.send_header("Access-Control-Allow-Methods", "POST, OPTIONS"); self.send_header("Access-Control-Allow-Headers", "Content-Type"); self.end_headers()
     def do_GET(self):
-        if self.path == "/api/health": self.send_json(HTTPStatus.OK, {"service":"rmr-owner-portal","version":3,"publishReady":publishing_status()["configured"]}); return
+        if self.path == "/api/health": self.send_json(HTTPStatus.OK, {"service":"rmr-owner-portal","version":4,"publishReady":publishing_status()["configured"]}); return
         if self.path == "/api/publishing-status":
             status=publishing_status(); self.send_json(HTTPStatus.OK if status["configured"] else HTTPStatus.SERVICE_UNAVAILABLE,status); return
         if self.path == "/api/live-content":
@@ -97,7 +120,9 @@ class Handler(SimpleHTTPRequestHandler):
             committed_file=github_request(f"https://api.github.com/repos/{REPOSITORY}/contents/{CONTENT_FILE}?ref={commit}")
             committed=normalise_content(json.loads(base64.b64decode(committed_file["content"]).decode("utf-8"))); diagnostic("committed GitHub state",{"commit":commit,"content":committed})
             if committed != expected: self.send_json(HTTPStatus.CONFLICT,{"ok":False,"error":"GitHub committed content did not match the publish payload.","commit":commit,"expected":expected,"committed":committed}); return
-            self.send_json(HTTPStatus.OK,{"ok":True,"verified":True,"commit":commit,"commitUrl":result["commit"]["html_url"],"committedContent":committed})
+            sync = sync_local_preview()
+            diagnostic("local preview sync", sync)
+            self.send_json(HTTPStatus.OK,{"ok":True,"verified":True,"commit":commit,"commitUrl":result["commit"]["html_url"],"committedContent":committed,"liveSiteUrl":"https://jameseaeverett-bot.github.io/Remote-Master-Rack/","localSync":sync})
         except (ValueError,KeyError,json.JSONDecodeError) as error: self.send_json(HTTPStatus.BAD_REQUEST,{"ok":False,"error":str(error)})
         except urllib.error.HTTPError as error: self.send_json(error.code,{"ok":False,"error":f"GitHub rejected the publish request (HTTP {error.code})."})
         except Exception: self.send_json(HTTPStatus.BAD_GATEWAY,{"ok":False,"error":"The publishing service could not reach GitHub."})

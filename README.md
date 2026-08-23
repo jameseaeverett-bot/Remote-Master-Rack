@@ -2,12 +2,15 @@
 
 The public holding page reads `website-content.json`. The Owner Portal provides drafts and direct publishing for routine wording changes.
 
-## Daily publishing
+## Daily workflow
 
-1. Open **RMR Owner Portal** from `~/Desktop/RMR Launchers`.
+1. Open **RMR Owner Portal** from `~/Desktop/RMR Launchers` to edit content.
 2. Edit the Website Content fields.
 3. Use **Save Draft** whenever you want to keep a local draft.
 4. Use **Publish to Website** to commit the content to GitHub and trigger GitHub Pages.
+5. Open **RMR Website (Live)** to see the public GitHub Pages website.
+
+`RMR Website Preview` is deliberately separate: it opens the local development copy only. Publishing never opens or refreshes it. After a publish, the local project is fast-forwarded only when it is clean; modified or ahead local work is never overwritten.
 
 ## One-time secure publishing setup
 
