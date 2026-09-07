@@ -37,18 +37,18 @@
     <p id="waitlist-intro">Join the RMR waiting list for launch, product and availability updates.</p>
     <form class="waitlist-form" data-waitlist-form novalidate>
       <div class="field-group">
-        <label for="waitlist-first-name">First name <span>Optional</span></label>
+        <label class="field-label" for="waitlist-first-name"><span>First name</span><small>Optional</small></label>
         <input id="waitlist-first-name" name="firstName" type="text" autocomplete="given-name" maxlength="80" />
       </div>
       <div class="field-group">
-        <label for="waitlist-email">Email address</label>
+        <label class="field-label" for="waitlist-email"><span>Email address</span></label>
         <input id="waitlist-email" name="email" type="email" autocomplete="email" inputmode="email" maxlength="254" required aria-describedby="waitlist-feedback" />
       </div>
       <label class="consent-field" for="waitlist-consent">
         <input id="waitlist-consent" name="consent" type="checkbox" required />
         <span>Keep me updated about Remote Master Rack launches, products and availability.</span>
       </label>
-      <input class="honeypot" name="website" type="text" tabindex="-1" autocomplete="off" aria-hidden="true" />
+      <input name="website" type="text" hidden tabindex="-1" autocomplete="off" aria-hidden="true" />
       <p class="form-feedback" id="waitlist-feedback" role="status" aria-live="polite"></p>
       <button class="primary" type="submit" data-waitlist-submit>Join Waiting List</button>
     </form>
