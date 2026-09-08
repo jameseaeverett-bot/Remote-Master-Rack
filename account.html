@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Remote Master Rack customer account." />
+  <title>My Account — Remote Master Rack</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body data-page="account">
+  <div class="site-shell">
+    <aside class="brand-rail">
+      <a class="brand" href="index.html"><span class="mark">RMR</span><span>REMOTE<br />MASTER RACK</span></a>
+      <nav class="site-nav" aria-label="Primary navigation" data-navigation></nav>
+      <div class="agent-status"><i></i><span>Studio Agent<br /><small>Preparing for launch</small></span></div>
+    </aside>
+    <main class="destination-main">
+      <section class="destination-hero">
+        <p class="eyebrow">RMR ACCOUNT</p>
+        <h1>Your RMR <em>Account.</em></h1>
+        <div class="account-panel" data-account-loading>
+          <p class="account-state">Checking your secure session…</p>
+        </div>
+        <div class="account-panel" data-account-signed-in hidden>
+          <p class="eyebrow">SIGNED IN</p>
+          <h2 data-account-name>RMR Customer</h2>
+          <p class="account-email" data-account-email></p>
+          <p class="account-state">Your customer account is active. Booking will be introduced in a later release.</p>
+          <form method="post" action="/auth/logout"><button class="secondary" type="submit">Log Out</button></form>
+        </div>
+        <div class="account-panel" data-account-signed-out hidden>
+          <p class="eyebrow">SIGNED OUT</p>
+          <h2>Your secure session has ended.</h2>
+          <p class="account-state">Sign in again to return to your RMR account.</p>
+          <a class="primary" href="/auth/login">Sign In</a>
+        </div>
+        <a class="account-home-link" href="index.html">Return Home</a>
+      </section>
+      <footer><span>© 2026 Remote Master Rack</span><span>Attended remote analogue mastering</span></footer>
+    </main>
+  </div>
+  <script src="navigation.js"></script>
+  <script src="account.js"></script>
+</body>
+</html>
