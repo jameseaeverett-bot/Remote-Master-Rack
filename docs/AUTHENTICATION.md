@@ -52,7 +52,14 @@ Apply `migrations/accounts/0001_customer_accounts.sql` only to `rmr-customer-acc
 
 ## Desktop compatibility
 
-The future desktop client should be registered as a separate Auth0 **Native Application** in the same tenant. It should use the system browser with Authorization Code + PKCE and a secure loopback or registered deep-link callback. Both website and desktop resolve to the same Auth0 `sub` and therefore the same RMR customer record. Desktop tokens must use a future RMR API audience and must not reuse the website client secret or browser cookie.
+The desktop client is registered as a separate Auth0 **Native Application** in the same tenant. It uses the system browser, Authorization Code + PKCE and a loopback-only callback. Both website and desktop resolve to the same Auth0 `sub` and therefore the same RMR customer record. The desktop never uses the website client secret or browser cookie.
+
+The protected `/api/desktop/account` route accepts only a signed Auth0 access token issued for the RMR API audience, to the approved Native client, with `read:account` scope. It verifies the token server-side, obtains the matching Auth0 profile through `/userinfo`, and upserts the existing `customer_accounts` record by `(auth_provider, auth_subject)`.
+
+Additional production variables required before this route is deployed:
+
+- `AUTH0_API_AUDIENCE` — the identifier of the dedicated RMR Auth0 API.
+- `AUTH0_DESKTOP_CLIENT_ID` — the public Client ID of the approved RMR Native application.
 
 ## Not implemented in this foundation
 

@@ -6,10 +6,12 @@ import {
   TRANSACTION_COOKIE,
   createSessionCookie,
   getAuthConfig,
+  getDesktopApiConfig,
   openCookie,
   sealCookie,
   startAuthentication,
   upsertCustomerAccount,
+  verifyAccessToken,
   verifyIdToken,
 } from '../functions/_lib/auth.js';
 
@@ -93,6 +95,50 @@ test('ID tokens require a valid signature, issuer, audience, authorised party an
       config,
       'expected-nonce',
     )).sub, claims.sub);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test('desktop access tokens require the RMR API audience, Native client and account scope', async () => {
+  const keyPair = await crypto.subtle.generateKey(
+    { name: 'RSASSA-PKCS1-v1_5', modulusLength: 2048, publicExponent: new Uint8Array([1, 0, 1]), hash: 'SHA-256' },
+    true,
+    ['sign', 'verify'],
+  );
+  const publicJwk = await crypto.subtle.exportKey('jwk', keyPair.publicKey);
+  publicJwk.kid = 'rmr-desktop-test-key';
+  publicJwk.use = 'sig';
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async () => Response.json({ keys: [publicJwk] });
+
+  const config = getDesktopApiConfig({
+    AUTH0_DOMAIN: 'desktop-test.auth0.com',
+    AUTH0_API_AUDIENCE: 'https://api.remotemasterrack.com',
+    AUTH0_DESKTOP_CLIENT_ID: 'rmr-native-client',
+  });
+  const now = Math.floor(Date.now() / 1000);
+  const sign = async (claims) => {
+    const header = encodeSegment({ alg: 'RS256', typ: 'JWT', kid: publicJwk.kid });
+    const payload = encodeSegment(claims);
+    const signature = await crypto.subtle.sign('RSASSA-PKCS1-v1_5', keyPair.privateKey, new TextEncoder().encode(`${header}.${payload}`));
+    return `${header}.${payload}.${Buffer.from(signature).toString('base64url')}`;
+  };
+  const claims = {
+    iss: config.issuer,
+    aud: config.audience,
+    azp: config.clientId,
+    sub: 'auth0|customer-one',
+    scope: 'openid profile email read:account',
+    iat: now,
+    exp: now + 300,
+  };
+
+  try {
+    assert.equal((await verifyAccessToken(await sign(claims), config)).sub, claims.sub);
+    await assert.rejects(verifyAccessToken(await sign({ ...claims, aud: 'another-api' }), config));
+    await assert.rejects(verifyAccessToken(await sign({ ...claims, azp: 'another-client' }), config));
+    await assert.rejects(verifyAccessToken(await sign({ ...claims, scope: 'openid profile email' }), config));
   } finally {
     globalThis.fetch = originalFetch;
   }

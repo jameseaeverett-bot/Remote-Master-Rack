@@ -107,6 +107,15 @@ export const getAuthConfig = (env) => {
   return { domain, clientId, clientSecret, sessionSecret, baseUrl, issuer: issuerUrl.toString() };
 };
 
+export const getDesktopApiConfig = (env) => {
+  const domain = String(env.AUTH0_DOMAIN || '').replace(/^https?:\/\//i, '').replace(/\/+$/, '');
+  const audience = String(env.AUTH0_API_AUDIENCE || '');
+  const clientId = String(env.AUTH0_DESKTOP_CLIENT_ID || '');
+  if (!domain || !audience || !clientId) throw new Error('Desktop authentication is not configured.');
+  if (!/^[a-z0-9.-]+$/i.test(domain)) throw new Error('AUTH0_DOMAIN is invalid.');
+  return { domain, audience, clientId, issuer: `https://${domain}/` };
+};
+
 export const readSession = async (request, env) => {
   const { sessionSecret } = getAuthConfig(env);
   return openCookie(getCookie(request, SESSION_COOKIE), sessionSecret, 'rmr-session-v1');
@@ -207,6 +216,44 @@ export const verifyIdToken = async (idToken, config, expectedNonce) => {
   }
   if (typeof claims.nonce !== 'string' || !constantTimeEqual(claims.nonce, expectedNonce)) throw new Error('Invalid ID token nonce.');
   if (typeof claims.sub !== 'string' || !claims.sub || claims.sub.length > 255) throw new Error('Invalid ID token subject.');
+  return claims;
+};
+
+export const verifyAccessToken = async (accessToken, config) => {
+  const segments = String(accessToken || '').split('.');
+  if (segments.length !== 3) throw new Error('Invalid access token.');
+  const header = parseJsonSegment(segments[0]);
+  const claims = parseJsonSegment(segments[1]);
+  if (header.alg !== 'RS256' || typeof header.kid !== 'string') throw new Error('Unsupported access token signature.');
+
+  const jwk = await findSigningKey(config.issuer, header.kid);
+  const publicKey = await crypto.subtle.importKey(
+    'jwk',
+    jwk,
+    { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
+    false,
+    ['verify'],
+  );
+  const validSignature = await crypto.subtle.verify(
+    'RSASSA-PKCS1-v1_5',
+    publicKey,
+    base64UrlDecode(segments[2]),
+    encoder.encode(`${segments[0]}.${segments[1]}`),
+  );
+  if (!validSignature) throw new Error('Invalid access token signature.');
+
+  const now = Math.floor(Date.now() / 1000);
+  const audiences = Array.isArray(claims.aud) ? claims.aud : [claims.aud];
+  if (claims.iss !== config.issuer || !audiences.includes(config.audience)) throw new Error('Invalid access token issuer or audience.');
+  if ((claims.azp || claims.client_id) !== config.clientId) throw new Error('Invalid access token authorised party.');
+  if (typeof claims.exp !== 'number' || claims.exp <= now - CLOCK_SKEW_SECONDS) throw new Error('Expired access token.');
+  if (typeof claims.iat !== 'number' || claims.iat > now + CLOCK_SKEW_SECONDS) throw new Error('Invalid access token issue time.');
+  if (claims.nbf !== undefined && (typeof claims.nbf !== 'number' || claims.nbf > now + CLOCK_SKEW_SECONDS)) {
+    throw new Error('Access token is not yet valid.');
+  }
+  if (typeof claims.sub !== 'string' || !claims.sub || claims.sub.length > 255) throw new Error('Invalid access token subject.');
+  const scopes = typeof claims.scope === 'string' ? claims.scope.split(/\s+/) : [];
+  if (!scopes.includes('read:account')) throw new Error('Required access-token scope is missing.');
   return claims;
 };
 
