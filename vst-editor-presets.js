@@ -70,6 +70,13 @@ const load = async () => {
 if (controls.editor) {
   const selected = getRmrVstEditor(requestedEditor);
   if (context) context.textContent = selected ? `Community presets for ${selected.name}` : 'Browse shared RMR editor presets.';
+  if (selected) {
+    const shareLink = document.createElement('a');
+    shareLink.className = 'secondary share-entry-link';
+    shareLink.href = `/plugins/vst-editors/presets/share?editor=${encodeURIComponent(selected.slug)}`;
+    shareLink.textContent = 'Share a Preset';
+    context.parentElement.append(shareLink);
+  }
   [controls.editor, controls.creator, controls.genre, controls.sourceBus, controls.sort].forEach((control) => control.addEventListener('change', load));
   controls.preset.addEventListener('change', () => showDetail(presets.find((preset) => preset.id === controls.preset.value)));
   load();

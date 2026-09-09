@@ -2,6 +2,7 @@
 
 :root { --ink: #101110; --paper: #edede8; --muted: #9ba096; --gold: #cfbc7c; --line: #ffffff18; --panel: #ffffff06; font-family: Manrope, sans-serif; color: var(--paper); background: var(--ink); }
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 html { scroll-behavior: smooth; }
 body { margin: 0; background: radial-gradient(circle at 83% 4%, #2c3933 0, #151714 34%, #101110 72%); }
 button, a { font: inherit; }
@@ -151,6 +152,24 @@ footer { display: flex; gap: 18px; justify-content: space-between; color: #72786
 .preset-detail h2 { margin: 7px 0 12px; font: 600 28px 'Playfair Display', serif; }
 .preset-meta { color: #d3c691 !important; font: 11px 'DM Mono' !important; }
 .preset-detail .primary { margin-top: 18px; }
+.share-gate { max-width: 620px; margin-top: 40px; padding: 28px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); }
+.share-gate h2, .share-success h2 { font: 600 28px 'Playfair Display', serif; }
+.share-gate p:not(.eyebrow), .share-success p, .my-submissions p { color: var(--muted); font-size: 14px; line-height: 1.7; }
+.share-layout { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(260px, .55fr); gap: 18px; align-items: start; margin-top: 42px; }
+.share-form, .share-success, .my-submissions { padding: 26px; border: 1px solid var(--line); border-radius: 12px; background: #ffffff05; }
+.share-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+.share-fields label { display: grid; gap: 8px; color: #c9c3aa; font: 11px 'DM Mono'; letter-spacing: .4px; }
+.share-fields input:not([type='checkbox']), .share-fields select, .share-fields textarea { width: 100%; border: 1px solid #ffffff20; border-radius: 7px; padding: 11px 12px; background: #101110; color: var(--paper); font: 14px Manrope, sans-serif; }
+.share-fields input[readonly] { color: #b6b9b2; background: #171917; }
+.share-fields input:focus-visible, .share-fields select:focus-visible, .share-fields textarea:focus-visible { border-color: #bbaa6f; outline: 2px solid #cfbc7c22; }
+.share-fields small { color: var(--muted); font: 11px 'DM Mono'; }
+.share-wide { grid-column: 1 / -1; }
+.share-form .form-feedback { margin: 18px 0 8px; }
+.my-submissions { display: grid; gap: 12px; }
+.submission-row { display: grid; gap: 5px; padding: 14px 0; border-top: 1px solid var(--line); }
+.submission-row strong { font: 600 16px 'Playfair Display', serif; }
+.submission-row span { color: var(--muted); font: 11px 'DM Mono'; text-transform: capitalize; line-height: 1.5; }
+.share-entry-link { margin-top: 24px; }
 
 @media (max-width: 900px) {
   .editor-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -165,4 +184,6 @@ footer { display: flex; gap: 18px; justify-content: space-between; color: #72786
   .preset-filters { grid-template-columns: 1fr; }
   .preset-workspace { grid-template-columns: 1fr; }
   .preset-list { border-right: 0; border-bottom: 1px solid var(--line); }
+  .share-layout, .share-fields { grid-template-columns: 1fr; }
+  .share-wide { grid-column: auto; }
 }

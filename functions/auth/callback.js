@@ -18,11 +18,11 @@ export async function onRequestGet(context) {
   let baseUrl = 'https://remotemasterrack.com';
   try {
     baseUrl = getAuthConfig(context.env).baseUrl;
-    const { config, claims } = await completeAuthentication(context);
+    const { config, claims, returnTo } = await completeAuthentication(context);
     const account = await upsertCustomerAccount(context.env, claims);
     if (!account || account.account_status !== 'active') throw new Error('Customer account is unavailable.');
     const sessionCookie = await createSessionCookie(account, claims, config);
-    return redirectWithCookies(`${baseUrl}/account.html`, [
+    return redirectWithCookies(`${baseUrl}${returnTo || '/account.html'}`, [
       sessionCookie,
       clearCookie(TRANSACTION_COOKIE),
     ]);

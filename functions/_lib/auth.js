@@ -121,10 +121,25 @@ export const readSession = async (request, env) => {
   return openCookie(getCookie(request, SESSION_COOKIE), sessionSecret, 'rmr-session-v1');
 };
 
+const safeAuthReturn = (requestUrl) => {
+  const requested = new URL(requestUrl).searchParams.get('returnTo');
+  if (!requested) return null;
+  try {
+    const parsed = new URL(requested, 'https://rmr.invalid');
+    if (parsed.origin !== 'https://rmr.invalid' || parsed.pathname !== '/plugins/vst-editors/presets/share') return null;
+    const editor = parsed.searchParams.get('editor');
+    if (!['folktek-resonant-garden', 'pultec-eqp-1a', 'ssl-fusion'].includes(editor)) return null;
+    return `${parsed.pathname}?editor=${encodeURIComponent(editor)}`;
+  } catch {
+    return null;
+  }
+};
+
 export const startAuthentication = async ({ request, env }, screenHint) => {
   const config = getAuthConfig(env);
+  const returnTo = safeAuthReturn(request.url);
   const existingSession = await readSession(request, env);
-  if (existingSession) return Response.redirect(`${config.baseUrl}/account.html`, 302);
+  if (existingSession) return Response.redirect(`${config.baseUrl}${returnTo || '/account.html'}`, 302);
 
   const state = randomValue();
   const nonce = randomValue();
@@ -134,6 +149,7 @@ export const startAuthentication = async ({ request, env }, screenHint) => {
     state,
     nonce,
     verifier,
+    returnTo,
     exp: Math.floor(Date.now() / 1000) + TRANSACTION_LIFETIME_SECONDS,
   }, config.sessionSecret, 'rmr-auth-transaction-v1');
 
@@ -282,7 +298,7 @@ export const completeAuthentication = async ({ request, env }) => {
   if (!tokenResponse.ok) throw new Error('Authentication code exchange failed.');
   const tokens = await tokenResponse.json();
   const claims = await verifyIdToken(tokens.id_token, config, transaction.nonce);
-  return { config, claims };
+  return { config, claims, returnTo: transaction.returnTo || null };
 };
 
 const cleanProfileValue = (value, maximum) => {

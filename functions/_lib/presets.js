@@ -84,5 +84,38 @@ export const safeDownloadFilename = (value) => String(value || 'preset').replace
 export const allowedPresetExtensions = Object.freeze({
   'folktek-resonant-garden': [],
   'pultec-eqp-1a': [],
-  'ssl-fusion': [],
+  'ssl-fusion': ['.rmrpreset'],
 });
+
+export const MAX_PRESET_FILE_BYTES = 256 * 1024;
+
+const sha256Hex = async (bytes) => [...new Uint8Array(await crypto.subtle.digest('SHA-256', bytes))]
+  .map((byte) => byte.toString(16).padStart(2, '0')).join('');
+
+export const validatePresetDocument = async (editorSlug, filename, bytes) => {
+  if (!validEditor(editorSlug)) return 'Unknown editor.';
+  const name = String(filename || '');
+  const separator = name.lastIndexOf('.');
+  const extension = separator >= 0 ? name.slice(separator).toLowerCase() : '';
+  if (!allowedPresetExtensions[editorSlug].includes(extension)) return 'This preset file format is not approved for the selected editor.';
+  if (!bytes || bytes.byteLength === 0) return 'The preset file is empty.';
+  if (bytes.byteLength > MAX_PRESET_FILE_BYTES) return 'The preset file is too large.';
+  if (['.exe', '.dll', '.bat', '.cmd', '.ps1', '.msi', '.js', '.zip'].includes(extension)) return 'This file type is not permitted.';
+  try {
+    const document = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes));
+    if (editorSlug === 'ssl-fusion' && (
+      document?.editorId !== 'ssl-fusion' || document?.format !== 'rmr-vst-editor-preset' || document?.formatVersion !== 1 ||
+      document?.productStateVersion !== 1 || !document?.payload?.parameters || Array.isArray(document.payload.parameters) ||
+      document?.integrity?.algorithm !== 'sha-256' || document?.integrity?.scope !== 'canonical-envelope-without-integrity' ||
+      !/^[a-f0-9]{64}$/i.test(document?.integrity?.value || '')
+    )) return 'The SSL Fusion preset structure is invalid.';
+    if (editorSlug === 'ssl-fusion') {
+      const { integrity, ...unsignedEnvelope } = document;
+      const calculated = await sha256Hex(new TextEncoder().encode(JSON.stringify(unsignedEnvelope)));
+      if (calculated !== integrity.value.toLowerCase()) return 'The SSL Fusion preset integrity check failed.';
+    }
+  } catch {
+    return 'The preset file is not valid UTF-8 JSON.';
+  }
+  return null;
+};

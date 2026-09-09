@@ -32,7 +32,9 @@ test('encrypted cookies reject tampering and expiry', async () => {
     value: 'safe',
     exp: Math.floor(Date.now() / 1000) + 60,
   });
-  assert.equal(await openCookie(`${valid.slice(0, -1)}x`, sessionSecret, 'test'), null);
+  const [version, iv, ciphertext] = valid.split('.');
+  const tamperedCiphertext = `${ciphertext[0] === 'A' ? 'B' : 'A'}${ciphertext.slice(1)}`;
+  assert.equal(await openCookie(`${version}.${iv}.${tamperedCiphertext}`, sessionSecret, 'test'), null);
   const expired = await sealCookie({ exp: Math.floor(Date.now() / 1000) - 1 }, sessionSecret, 'test');
   assert.equal(await openCookie(expired, sessionSecret, 'test'), null);
 });
@@ -55,6 +57,27 @@ test('login starts an Auth0 code flow with PKCE and a hardened transaction cooki
   assert.match(cookie, /HttpOnly/);
   assert.match(cookie, /Secure/);
   assert.match(cookie, /SameSite=Lax/);
+});
+
+test('authentication transaction preserves only a validated preset-share return route', async () => {
+  const returnTo = '/plugins/vst-editors/presets/share?editor=ssl-fusion';
+  const response = await startAuthentication({
+    request: new Request(`https://remotemasterrack.com/auth/login?returnTo=${encodeURIComponent(returnTo)}`),
+    env: environment,
+  }, 'login');
+  const cookie = response.headers.get('Set-Cookie');
+  const sealed = cookie.slice(cookie.indexOf('=') + 1, cookie.indexOf(';'));
+  const transaction = await openCookie(sealed, sessionSecret, 'rmr-auth-transaction-v1');
+  assert.equal(transaction.returnTo, returnTo);
+
+  const unsafe = await startAuthentication({
+    request: new Request('https://remotemasterrack.com/auth/login?returnTo=https%3A%2F%2Fevil.example%2F'),
+    env: environment,
+  }, 'login');
+  const unsafeCookie = unsafe.headers.get('Set-Cookie');
+  const unsafeSealed = unsafeCookie.slice(unsafeCookie.indexOf('=') + 1, unsafeCookie.indexOf(';'));
+  const unsafeTransaction = await openCookie(unsafeSealed, sessionSecret, 'rmr-auth-transaction-v1');
+  assert.equal(unsafeTransaction.returnTo, null);
 });
 
 test('ID tokens require a valid signature, issuer, audience, authorised party and nonce', async () => {
