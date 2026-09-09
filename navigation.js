@@ -1,11 +1,11 @@
 const destinations = [
-  ['login-book.html', 'Login & Book', 'login-book'],
-  ['create-account.html', 'Create Account', 'create-account'],
-  ['tools.html', 'Tools', 'tools'],
-  ['plugins.html', 'Plugins', 'plugins'],
-  ['store.html', 'Store', 'store'],
-  ['the-rmr-studio.html', 'The RMR Studio', 'the-rmr-studio'],
-  ['about.html', 'About', 'about']
+  ['/login-book', 'Login & Book', 'login-book'],
+  ['/create-account', 'Create Account', 'create-account'],
+  ['/tools', 'Tools', 'tools'],
+  ['/plugins', 'Plugins', 'plugins'],
+  ['/store', 'Store', 'store'],
+  ['/the-rmr-studio', 'The RMR Studio', 'the-rmr-studio'],
+  ['/about', 'About', 'about']
 ];
 
 const currentPage = document.body.dataset.page;
