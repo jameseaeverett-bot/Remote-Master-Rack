@@ -1,7 +1,17 @@
 const editorGallery = document.querySelector('[data-editor-gallery]');
+const contentFor = (id, fallback) => window.RMRContent?.get(id, fallback) || fallback;
 
-if (editorGallery) {
-  rmrVstEditors.forEach((editor) => {
+const applyVstPageContent = () => {
+  const content = contentFor('vst-editors', {});
+  if (content.heading) document.querySelector('[data-vst-heading]')?.replaceChildren(document.createTextNode(content.heading));
+  if (content.intro) document.querySelector('[data-vst-intro]')?.replaceChildren(document.createTextNode(content.intro));
+};
+
+const renderEditorGallery = () => {
+  if (!editorGallery) return;
+  editorGallery.replaceChildren();
+  rmrVstEditors.forEach((baseEditor) => {
+    const editor = { ...baseEditor, ...contentFor(baseEditor.slug, {}) };
     const card = document.createElement('article');
     card.className = `editor-card editor-card--${editor.slug}`;
 
@@ -15,18 +25,22 @@ if (editorGallery) {
     metadata.className = 'editor-card__content';
     metadata.innerHTML = '<p class="eyebrow"></p><h2></h2><p class="editor-card__description"></p><p class="status-pill"></p>';
     metadata.querySelector('.eyebrow').textContent = editor.hardware;
-    metadata.querySelector('h2').textContent = editor.name;
-    metadata.querySelector('.editor-card__description').textContent = editor.description;
+    metadata.querySelector('h2').textContent = editor.title || editor.name;
+    metadata.querySelector('.editor-card__description').textContent = editor.cardDescription || editor.description;
     metadata.querySelector('.status-pill').textContent = editor.status;
 
     const link = document.createElement('a');
     link.className = 'editor-card__link secondary';
     link.href = editorUrl(editor.slug);
-    link.textContent = `Explore ${editor.name}`;
-    link.setAttribute('aria-label', `Explore ${editor.name}`);
+    link.textContent = editor.ctaLabel || `Explore ${editor.title || editor.name}`;
+    link.setAttribute('aria-label', editor.ctaLabel || `Explore ${editor.title || editor.name}`);
 
     metadata.append(link);
     card.append(visual, metadata);
     editorGallery.append(card);
   });
-}
+};
+
+applyVstPageContent();
+renderEditorGallery();
+window.RMRContent?.subscribe(() => { applyVstPageContent(); renderEditorGallery(); });
