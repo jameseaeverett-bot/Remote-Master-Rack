@@ -43,3 +43,11 @@ function presetUrl(slug) {
 function sharePresetUrl(slug) {
   return `/plugins/vst-editors/presets/share?editor=${encodeURIComponent(slug)}`;
 }
+
+const rmrAgeProducts = [
+  { slug: 'age-filter', name: 'AGE FILTER', description: 'A focused filtering tool in development for the AGE Series.', visualLabel: 'FILTER', status: 'In Development' },
+  { slug: 'age-drive', name: 'AGE DRIVE', description: 'A drive and character tool in development for the AGE Series.', visualLabel: 'DRIVE', status: 'In Development' },
+  { slug: 'age-space', name: 'AGE SPACE', description: 'A spatial processing tool in development for the AGE Series.', visualLabel: 'SPACE', status: 'In Development' },
+  { slug: 'age-move', name: 'AGE MOVE', description: 'A movement-focused tool in development for the AGE Series.', visualLabel: 'MOVE', status: 'In Development' },
+  { slug: 'age-sample', name: 'AGE SAMPLE', description: 'A sample-focused tool in development for the AGE Series.', visualLabel: 'SAMPLE', status: 'In Development' }
+];
