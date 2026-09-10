@@ -123,6 +123,8 @@ footer { display: flex; gap: 18px; justify-content: space-between; color: #72786
 .age-card--age-space .age-visual { background: linear-gradient(125deg, #1d2f35, #0e1518 54%, #242d3b); }
 .age-card--age-move .age-visual { background: linear-gradient(125deg, #2a2438, #131019 54%, #342b1f); }
 .age-card--age-sample .age-visual { background: linear-gradient(125deg, #28342f, #101614 54%, #342d20); }
+.tool-card--daw-detectives .tool-visual, .tool-visual--daw-detectives { background: linear-gradient(125deg, #29362f, #101614 54%, #352d1f); }
+.tool-card--compare .tool-visual, .tool-visual--compare { background: linear-gradient(125deg, #27303a, #101216 54%, #3a2d1d); }
 .editor-card__content { min-height: 244px; padding: 22px; display: flex; flex-direction: column; align-items: flex-start; }
 .editor-card__content h2 { margin: 8px 0 11px; font: 600 25px/1.18 'Playfair Display', serif; }
 .editor-card__description { color: var(--muted); font-size: 13px; line-height: 1.65; }
