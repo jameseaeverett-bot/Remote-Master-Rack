@@ -6,10 +6,16 @@ const applyPluginsContent = () => {
   const vst = window.RMRContent?.get('vst-editors', {}) || {};
   const age = window.RMRContent?.get('age-series', {}) || {};
   if (vst.title) document.querySelector('[data-vst-title]')?.replaceChildren(document.createTextNode(vst.title));
-  if (vst.cardDescription) document.querySelector('[data-vst-card-description]')?.replaceChildren(document.createTextNode(vst.cardDescription));
+  if (Object.prototype.hasOwnProperty.call(vst, 'cardDescription')) {
+    const description = document.querySelector('[data-vst-card-description]');
+    if (description) { description.textContent = vst.cardDescription; description.hidden = vst.cardDescription === ''; }
+  }
   if (vst.ctaLabel) document.querySelector('[data-vst-cta]')?.replaceChildren(document.createTextNode(vst.ctaLabel));
   if (age.title) document.querySelector('[data-age-title]')?.replaceChildren(document.createTextNode(age.title));
-  if (age.cardDescription) document.querySelector('[data-age-card-description]')?.replaceChildren(document.createTextNode(age.cardDescription));
+  if (Object.prototype.hasOwnProperty.call(age, 'cardDescription')) {
+    const description = document.querySelector('[data-age-card-description]');
+    if (description) { description.textContent = age.cardDescription; description.hidden = age.cardDescription === ''; }
+  }
   if (age.ctaLabel) document.querySelector('[data-age-cta]')?.replaceChildren(document.createTextNode(age.ctaLabel));
 };
 applyPluginsContent();

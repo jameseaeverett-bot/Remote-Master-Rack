@@ -23,7 +23,9 @@ const renderAgeGallery = () => {
     content.className = 'editor-card__content';
     content.innerHTML = '<p class="eyebrow">AGE SERIES</p><h2></h2><p class="editor-card__description"></p><p class="status-pill"></p><button class="editor-card__link secondary" type="button" disabled></button>';
     content.querySelector('h2').textContent = product.title || product.name;
-    content.querySelector('.editor-card__description').textContent = product.cardDescription || product.description;
+    const description = content.querySelector('.editor-card__description');
+    description.textContent = product.cardDescription;
+    description.hidden = product.cardDescription === '';
     content.querySelector('.status-pill').textContent = product.status;
     content.querySelector('button').textContent = product.ctaLabel || 'Coming Soon';
 

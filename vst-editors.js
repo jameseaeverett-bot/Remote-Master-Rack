@@ -26,7 +26,9 @@ const renderEditorGallery = () => {
     metadata.innerHTML = '<p class="eyebrow"></p><h2></h2><p class="editor-card__description"></p><p class="status-pill"></p>';
     metadata.querySelector('.eyebrow').textContent = editor.hardware;
     metadata.querySelector('h2').textContent = editor.title || editor.name;
-    metadata.querySelector('.editor-card__description').textContent = editor.cardDescription || editor.description;
+    const description = metadata.querySelector('.editor-card__description');
+    description.textContent = editor.cardDescription;
+    description.hidden = editor.cardDescription === '';
     metadata.querySelector('.status-pill').textContent = editor.status;
 
     const link = document.createElement('a');

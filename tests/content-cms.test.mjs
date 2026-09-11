@@ -11,6 +11,11 @@ test('CMS contract accepts stable IDs and field-level text', () => {
   assert.deepEqual(records, [{ id: 'daw-detectives', fields: { cardDescription: 'Updated description.' } }]);
 });
 
+test('CMS contract preserves an explicitly blank field for intentional suppression', () => {
+  const records = normaliseContentRecords([{ id: 'ssl-fusion', fields: { cardDescription: '', detailIntro: 'Independent detail summary.' } }]);
+  assert.deepEqual(records, [{ id: 'ssl-fusion', fields: { cardDescription: '', detailIntro: 'Independent detail summary.' } }]);
+});
+
 test('CMS contract rejects unknown IDs and fields', () => {
   assert.throws(() => normaliseContentRecords([{ id: 'unknown-product', fields: { title: 'No.' } }]));
   assert.throws(() => normaliseContentRecords([{ id: 'compare', fields: { html: '<b>Not supported</b>' } }]));

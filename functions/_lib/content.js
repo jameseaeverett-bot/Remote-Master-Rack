@@ -3,6 +3,7 @@ const FIELD_LIMITS = Object.freeze({
   intro: 800,
   title: 160,
   cardDescription: 800,
+  detailIntro: 800,
   description: 4000,
   compatibility: 800,
   status: 120,
@@ -28,7 +29,10 @@ export const normaliseContentFields = (fields) => {
     if (!maximum) throw new Error(`Unsupported content field: ${field}.`);
     if (typeof value !== 'string') throw new Error(`Content field ${field} must be text.`);
     const clean = value.trim().replace(/\r\n?/g, '\n');
-    if (!clean || clean.length > maximum) throw new Error(`Content field ${field} is invalid.`);
+    // An explicitly empty field is meaningful: it lets an owner deliberately
+    // suppress optional customer-facing copy. An absent field remains the
+    // signal to use the presentation layer's built-in default.
+    if (clean.length > maximum) throw new Error(`Content field ${field} is invalid.`);
     result[field] = clean;
   }
   return result;
