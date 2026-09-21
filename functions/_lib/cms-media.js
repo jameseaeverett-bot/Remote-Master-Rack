@@ -188,6 +188,20 @@ export const inspectCmsMedia = async (database, mediaId) => {
   return adminProjection(row);
 };
 
+// Orphaned media remains recoverable during its retention period, so an owner
+// may preview it. Deleted media is deliberately excluded.
+export const resolveOwnerCmsMediaPreview = async (database, mediaId) => {
+  if (!validCmsMediaId(mediaId)) fail('Media asset was not found.', 404);
+  const row = await database.prepare(`
+    SELECT id,object_key,content_type,file_size_bytes,lifecycle_state
+    FROM cms_media_assets
+    WHERE id = ? AND lifecycle_state IN ('active','orphaned')
+    LIMIT 1
+  `).bind(mediaId).first();
+  if (!row) fail('Media asset was not found.', 404);
+  return row;
+};
+
 export const uploadCmsMedia = async ({ database, bucket, file, defaultAltText = '', defaultCaption = '', subject }) => {
   if (!(file instanceof File)) fail('An image file is required.');
   const bytes = new Uint8Array(await file.arrayBuffer());

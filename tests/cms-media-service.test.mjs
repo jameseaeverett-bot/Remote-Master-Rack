@@ -10,6 +10,7 @@ import {
 } from '../functions/_lib/cms-media.js';
 import { CMS_V2_MEDIA_LIMITS } from '../functions/_lib/content-v2.js';
 import { onRequestPost as uploadMediaEndpoint } from '../functions/api/admin/media/index.js';
+import { onRequestGet as previewMediaEndpoint } from '../functions/api/admin/media/[id]/preview.js';
 import { onRequestGet as deliverMediaEndpoint } from '../functions/media/[id]/[revision].js';
 
 const crc32 = (bytes) => {
@@ -109,6 +110,9 @@ const makeDatabase = () => {
               }
               const row = media.get(values[0]);
               if (!row) return null;
+              if (sql.includes("lifecycle_state IN ('active','orphaned')")) {
+                return ['active', 'orphaned'].includes(row.lifecycle_state) ? row : null;
+              }
               if (sql.includes("m.lifecycle_state='active'")) {
                 const counts = references.get(values[0]) || { product: 0, hardware: 0 };
                 return row.lifecycle_state === 'active' && counts.product + counts.hardware > 0 ? row : null;
@@ -204,6 +208,76 @@ test('owner media upload rejects unauthenticated and authenticated non-owner req
       AUTH0_DESKTOP_CLIENT_ID: 'rmr-native-client', CMS_OWNER_SUBJECTS: 'auth0|not-owner',
     } });
     assert.equal(missingBinding.status, 503);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test('owner preview serves active and orphaned private media without making it public', async () => {
+  const database = makeDatabase();
+  const bucket = makeR2();
+  const media = await uploadCmsMedia({
+    database, bucket, file: new File([png()], 'private-preview.png', { type: 'image/png' }), subject: 'auth0|owner',
+  });
+  const unauthenticated = await previewMediaEndpoint({
+    request: new Request(`https://remotemasterrack.com/api/admin/media/${media.id}/preview`), env: {}, params: { id: media.id },
+  });
+  assert.equal(unauthenticated.status, 401);
+
+  const keyPair = await crypto.subtle.generateKey(
+    { name: 'RSASSA-PKCS1-v1_5', modulusLength: 2048, publicExponent: Uint8Array.of(1, 0, 1), hash: 'SHA-256' },
+    true, ['sign', 'verify'],
+  );
+  const publicJwk = await crypto.subtle.exportKey('jwk', keyPair.publicKey);
+  Object.assign(publicJwk, { kid: 'cms-media-preview-owner', use: 'sig' });
+  const encode = (value) => Buffer.from(JSON.stringify(value)).toString('base64url');
+  const now = Math.floor(Date.now() / 1000);
+  const header = encode({ alg: 'RS256', typ: 'JWT', kid: publicJwk.kid });
+  const claims = encode({
+    iss: 'https://cms-media-preview.auth0.com/', aud: 'https://api.remotemasterrack.com', azp: 'rmr-native-client',
+    sub: 'auth0|owner-preview', scope: 'read:account', iat: now, exp: now + 300,
+  });
+  const signature = await crypto.subtle.sign('RSASSA-PKCS1-v1_5', keyPair.privateKey, new TextEncoder().encode(`${header}.${claims}`));
+  const token = `${header}.${claims}.${Buffer.from(signature).toString('base64url')}`;
+  const request = (id = media.id) => new Request(`https://remotemasterrack.com/api/admin/media/${id}/preview`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  const baseEnv = {
+    AUTH0_DOMAIN: 'cms-media-preview.auth0.com', AUTH0_API_AUDIENCE: 'https://api.remotemasterrack.com',
+    AUTH0_DESKTOP_CLIENT_ID: 'rmr-native-client', CONTENT_DB: database, CMS_MEDIA: bucket,
+  };
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async () => Response.json({ keys: [publicJwk] });
+  try {
+    const nonOwner = await previewMediaEndpoint({ request: request(), env: { ...baseEnv, CMS_OWNER_SUBJECTS: 'auth0|someone-else' }, params: { id: media.id } });
+    assert.equal(nonOwner.status, 403);
+
+    const ownerEnv = { ...baseEnv, CMS_OWNER_SUBJECTS: 'auth0|owner-preview' };
+    const preview = await previewMediaEndpoint({ request: request(), env: ownerEnv, params: { id: media.id } });
+    assert.equal(preview.status, 200);
+    assert.equal(preview.headers.get('Content-Type'), 'image/png');
+    assert.equal(preview.headers.get('Cache-Control'), 'private, no-store');
+    assert.equal(preview.headers.get('X-Content-Type-Options'), 'nosniff');
+    assert.equal(preview.headers.get('ETag'), null);
+    assert.equal(preview.headers.get('X-RMR-Object-Key'), null);
+    assert.deepEqual(new Uint8Array(await preview.arrayBuffer()), png());
+
+    const publicContext = {
+      request: new Request(`https://remotemasterrack.com/media/${media.id}/${media.revision}`),
+      env: { CONTENT_DB: database, CMS_MEDIA: bucket }, params: { id: media.id, revision: media.revision },
+    };
+    assert.equal((await deliverMediaEndpoint(publicContext)).status, 404);
+    assert.equal((await previewMediaEndpoint({ request: request('..-private-key'), env: ownerEnv, params: { id: '..-private-key' } })).status, 404);
+    assert.equal((await previewMediaEndpoint({ request: request('media-00000000-0000-0000-0000-000000000000'), env: ownerEnv, params: { id: 'media-00000000-0000-0000-0000-000000000000' } })).status, 404);
+
+    database.media.get(media.id).lifecycle_state = 'orphaned';
+    assert.equal((await previewMediaEndpoint({ request: request(), env: ownerEnv, params: { id: media.id } })).status, 200);
+    database.media.get(media.id).lifecycle_state = 'deleted';
+    assert.equal((await previewMediaEndpoint({ request: request(), env: ownerEnv, params: { id: media.id } })).status, 404);
+
+    const missing = await uploadCmsMedia({ database, bucket, file: new File([png()], 'missing.png', { type: 'image/png' }), subject: 'auth0|owner' });
+    bucket.objects.delete(database.media.get(missing.id).object_key);
+    assert.equal((await previewMediaEndpoint({ request: request(missing.id), env: ownerEnv, params: { id: missing.id } })).status, 404);
   } finally {
     globalThis.fetch = originalFetch;
   }
