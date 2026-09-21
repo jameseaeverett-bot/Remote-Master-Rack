@@ -14,6 +14,9 @@
   --accent-soft: #4fd4c817;
   --accent-ink: #071211;
   --status: #58d4c7;
+  --login-book-photo: url('assets/images/rmr-front-page-image-2.png');
+  --login-book-photo-position: 78% top;
+  --login-book-photo-fade: linear-gradient(90deg, transparent 0%, transparent 16%, rgb(0 0 0 / 2%) 28%, rgb(0 0 0 / 7%) 40%, rgb(0 0 0 / 16%) 53%, rgb(0 0 0 / 31%) 67%, rgb(0 0 0 / 54%) 80%, rgb(0 0 0 / 79%) 92%, #000 100%);
   --font-ui: 'DM Sans', sans-serif;
   --font-display: 'Space Grotesk', sans-serif;
   --font-label: 'DM Mono', monospace;
@@ -59,11 +62,41 @@ h2 { font-size: 19px; }
 footer { display: flex; gap: 18px; justify-content: space-between; color: #7c8984; font: 10px var(--font-label); letter-spacing: .3px; margin-top: clamp(80px, 13vh, 150px); }
 
 .destination-main { display: flex; min-height: calc(100vh - 30px); flex-direction: column; }
+body[data-page='login-book'] .destination-main {
+  max-width: none;
+  min-height: 100vh;
+  margin: 0;
+  padding: clamp(70px, 13vh, 150px) clamp(32px, 7vw, 100px) 30px;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+body[data-page='login-book'] .destination-main::before {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  content: '';
+  background: var(--login-book-photo) var(--login-book-photo-position) / cover no-repeat;
+  -webkit-mask-image: var(--login-book-photo-fade);
+  mask-image: var(--login-book-photo-fade);
+}
 .destination-hero { max-width: 690px; margin: auto 0; }
 .destination-hero h1 { margin-bottom: 22px; }
 .destination-note { max-width: 520px; margin: 28px 0 26px; padding: 17px 18px; border: 1px solid var(--line); border-radius: 9px; background: var(--panel); color: #b7bbb3; font-size: 13px; line-height: 1.6; }
 .destination-main footer { margin-top: 80px; }
 .auth-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+
+/* Login & Book is the customer entry-point hero, not a standard destination heading. */
+body[data-page='login-book'] .destination-hero { max-width: 760px; }
+body[data-page='login-book'] .destination-hero .eyebrow { margin-bottom: 18px; font-size: 12px; letter-spacing: 2px; }
+body[data-page='login-book'] .destination-hero h1 { margin-bottom: 30px; font-size: clamp(64px, 7.3vw, 108px); }
+body[data-page='login-book'] .destination-hero .intro { max-width: 660px; font-size: 20px; line-height: 1.55; }
+body[data-page='login-book'] .destination-note { max-width: 560px; margin: 30px 0 28px; padding: 21px 22px; font-size: 15px; }
+body[data-page='login-book'] .auth-actions { gap: 14px; }
+body[data-page='login-book'] .auth-actions .primary,
+body[data-page='login-book'] .auth-actions .secondary { min-height: 58px; min-width: 185px; padding: 0 25px; font-size: 16px; }
+body[data-page='login-book'] .account-home-link { margin-top: 27px; font-size: 12px; }
+
 .auth-status { max-width: 520px; margin: 0 0 18px; color: #d9a29b; font-size: 13px; }
 .account-panel { max-width: 540px; margin: 28px 0 22px; padding: 24px; border: 1px solid var(--line); border-radius: 11px; background: var(--panel); }
 .account-panel h2 { margin-bottom: 7px; }
@@ -108,7 +141,13 @@ footer { display: flex; gap: 18px; justify-content: space-between; color: #7c898
   .features { grid-template-columns: 1fr; margin-top: 76px; }
   .features article { min-height: 0; }
   .destination-main { min-height: auto; }
+  body[data-page='login-book'] .destination-main::before { background-position: 67% top; }
   .destination-hero { margin: 0; }
+  body[data-page='login-book'] .destination-hero h1 { font-size: clamp(52px, 14vw, 72px); }
+  body[data-page='login-book'] .destination-hero .intro { font-size: 17px; }
+  body[data-page='login-book'] .destination-note { padding: 18px; font-size: 14px; }
+  body[data-page='login-book'] .auth-actions .primary,
+  body[data-page='login-book'] .auth-actions .secondary { min-height: 52px; min-width: 0; font-size: 15px; }
   footer { align-items: flex-start; flex-direction: column; margin-top: 70px; }
 .destination-main footer { margin-top: 70px; }
   .actions { flex-direction: column; align-items: stretch; }
