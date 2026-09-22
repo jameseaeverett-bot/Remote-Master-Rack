@@ -48,6 +48,16 @@ test('successful image loading replaces built-in artwork with the assigned alt t
   assert.equal(visual.attributes['aria-hidden'], undefined);
 });
 
+test('detached gallery preloads eagerly so Chromium can fire onload before insertion', () => {
+  const { client, images } = createClient(); const visual = element();
+  client.setAssignments([assignment('daw-detectives', 'card-artwork')]);
+  client.apply(visual, 'daw-detectives', 'card-artwork', () => {});
+  assert.equal(images[0].loading, 'eager');
+  assert.equal(visual.children.length, 0);
+  images[0].triggerLoad();
+  assert.equal(visual.children[0], images[0]);
+});
+
 test('card and detail slots remain independent and use their own assigned alt text', () => {
   const { client, images } = createClient(); const cardVisual = element(); const detailVisual = element();
   client.setAssignments([

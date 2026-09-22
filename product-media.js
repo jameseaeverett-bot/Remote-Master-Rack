@@ -35,7 +35,9 @@
     image.className = 'cms-product-media';
     image.alt = assignment.altText;
     image.decoding = 'async';
-    image.loading = slotKey === 'card-artwork' ? 'lazy' : 'eager';
+    // This image is deliberately detached until it has loaded, so it must not
+    // be lazy: Chromium may never fetch a detached lazy image.
+    image.loading = 'eager';
     image.onload = () => {
       if (element.dataset.rmrMediaRequest !== url) return;
       element.replaceChildren(image);
