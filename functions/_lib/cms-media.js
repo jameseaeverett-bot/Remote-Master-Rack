@@ -251,9 +251,12 @@ const referenceCount = async (database, mediaId) => {
   const row = await database.prepare(`
     SELECT
       (SELECT COUNT(*) FROM cms_product_media_slots WHERE media_id = ?) AS product_references,
-      (SELECT COUNT(*) FROM cms_studio_hardware_items WHERE media_id = ?) AS hardware_references
-  `).bind(mediaId, mediaId).first();
-  return Number(row?.product_references || 0) + Number(row?.hardware_references || 0);
+      (SELECT COUNT(*) FROM cms_studio_hardware_items WHERE media_id = ?) AS hardware_references,
+      (SELECT COUNT(*) FROM cms_studio_pages WHERE hero_media_id = ?) AS studio_page_references,
+      (SELECT COUNT(*) FROM cms_studio_software_groups WHERE media_id = ?) AS software_group_references
+  `).bind(mediaId, mediaId, mediaId, mediaId).first();
+  return Number(row?.product_references || 0) + Number(row?.hardware_references || 0)
+    + Number(row?.studio_page_references || 0) + Number(row?.software_group_references || 0);
 };
 
 export const retireCmsMedia = async ({ database, bucket, mediaId, subject, purge = false, now = new Date() }) => {
