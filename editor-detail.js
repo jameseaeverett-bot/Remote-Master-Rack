@@ -20,8 +20,16 @@ if (detailRoot) {
     detailRoot.querySelector('[data-editor-about]').textContent = editor.description;
     detailRoot.querySelector('[data-editor-presets]').href = presetUrl(editor.slug);
     detailRoot.querySelector('[data-editor-share]').href = sharePresetUrl(editor.slug);
-    detailRoot.querySelector('[data-editor-visual]').dataset.editorVisual = editor.slug;
-    detailRoot.querySelector('[data-editor-visual-label]').textContent = editor.visualLabel;
+    const visual = detailRoot.querySelector('[data-editor-visual]');
+    const renderFallbackVisual = () => {
+      visual.classList.remove('has-cms-media');
+      visual.setAttribute('aria-hidden', 'true');
+      visual.innerHTML = '<span>RMR</span><b></b>';
+      visual.dataset.editorVisual = editor.slug;
+      visual.querySelector('b').textContent = editor.visualLabel;
+    };
+    renderFallbackVisual();
+    window.RMRProductMedia?.apply(visual, editor.slug, 'detail-hero', renderFallbackVisual);
   }
   };
   render();

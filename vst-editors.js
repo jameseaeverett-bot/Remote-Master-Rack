@@ -17,9 +17,14 @@ const renderEditorGallery = () => {
 
     const visual = document.createElement('div');
     visual.className = 'editor-visual';
-    visual.setAttribute('aria-hidden', 'true');
-    visual.innerHTML = '<span>RMR</span><i></i><b></b>';
-    visual.querySelector('b').textContent = editor.visualLabel;
+    const renderFallbackVisual = () => {
+      visual.classList.remove('has-cms-media');
+      visual.setAttribute('aria-hidden', 'true');
+      visual.innerHTML = '<span>RMR</span><i></i><b></b>';
+      visual.querySelector('b').textContent = editor.visualLabel;
+    };
+    renderFallbackVisual();
+    window.RMRProductMedia?.apply(visual, editor.slug, 'card-artwork', renderFallbackVisual);
 
     const metadata = document.createElement('div');
     metadata.className = 'editor-card__content';

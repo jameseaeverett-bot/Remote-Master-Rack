@@ -21,9 +21,14 @@ const renderToolGallery = () => {
     card.className = `editor-card tool-card tool-card--${tool.slug}`;
     const visual = document.createElement('div');
     visual.className = 'editor-visual tool-visual';
-    visual.setAttribute('aria-hidden', 'true');
-    visual.innerHTML = '<span>RMR</span><i></i><b></b>';
-    visual.querySelector('b').textContent = tool.visualLabel;
+    const renderFallbackVisual = () => {
+      visual.classList.remove('has-cms-media');
+      visual.setAttribute('aria-hidden', 'true');
+      visual.innerHTML = '<span>RMR</span><i></i><b></b>';
+      visual.querySelector('b').textContent = tool.visualLabel;
+    };
+    renderFallbackVisual();
+    window.RMRProductMedia?.apply(visual, tool.slug, 'card-artwork', renderFallbackVisual);
     const content = document.createElement('div');
     content.className = 'editor-card__content';
     const eyebrow = document.createElement('p'); eyebrow.className = 'eyebrow'; eyebrow.textContent = 'RMR TOOLS';
@@ -48,8 +53,16 @@ const renderToolDetail = () => {
   detail.querySelector('[data-tool-status]').textContent = tool.status;
   detail.querySelector('[data-tool-availability]').textContent = tool.availability || tool.compatibility || baseTool.availability;
   detail.querySelector('[data-tool-requirements]').textContent = tool.requirements || baseTool.requirements;
-  detail.querySelector('[data-tool-visual]').classList.add(`tool-visual--${tool.slug}`);
-  detail.querySelector('[data-tool-visual-label]').textContent = tool.visualLabel;
+  const visual = detail.querySelector('[data-tool-visual]');
+  const renderFallbackVisual = () => {
+    visual.classList.remove('has-cms-media');
+    visual.setAttribute('aria-hidden', 'true');
+    visual.innerHTML = '<span>RMR</span><b></b>';
+    visual.classList.add(`tool-visual--${tool.slug}`);
+    visual.querySelector('b').textContent = tool.visualLabel;
+  };
+  renderFallbackVisual();
+  window.RMRProductMedia?.apply(visual, tool.slug, 'detail-hero', renderFallbackVisual);
 };
 
 applyToolsPageContent();

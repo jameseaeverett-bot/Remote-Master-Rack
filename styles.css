@@ -257,3 +257,11 @@ body[data-page='login-book'] .account-home-link { margin-top: 27px; font-size: 1
   .share-layout, .share-fields { grid-template-columns: 1fr; }
   .share-wide { grid-column: auto; }
 }
+
+/* CMS V2 product media replaces only the existing artwork region after a
+   successful immutable public-media load; all built-in artwork remains fallback. */
+.editor-visual.has-cms-media,
+.editor-detail__visual.has-cms-media { padding: 0; }
+.editor-visual.has-cms-media::after,
+.editor-detail__visual.has-cms-media::after { display: none; }
+.cms-product-media { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: cover; }

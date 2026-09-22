@@ -15,9 +15,14 @@ const renderAgeGallery = () => {
 
     const visual = document.createElement('div');
     visual.className = 'editor-visual age-visual';
-    visual.setAttribute('aria-hidden', 'true');
-    visual.innerHTML = '<span>RMR</span><i></i><b></b>';
-    visual.querySelector('b').textContent = product.visualLabel;
+    const renderFallbackVisual = () => {
+      visual.classList.remove('has-cms-media');
+      visual.setAttribute('aria-hidden', 'true');
+      visual.innerHTML = '<span>RMR</span><i></i><b></b>';
+      visual.querySelector('b').textContent = product.visualLabel;
+    };
+    renderFallbackVisual();
+    window.RMRProductMedia?.apply(visual, product.slug, 'card-artwork', renderFallbackVisual);
 
     const content = document.createElement('div');
     content.className = 'editor-card__content';

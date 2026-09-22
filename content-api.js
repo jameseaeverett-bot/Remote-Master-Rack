@@ -18,6 +18,9 @@
       Object.entries(payload.records).forEach(([id, fields]) => {
         if (fields && typeof fields === 'object' && !Array.isArray(fields)) records[id] = fields;
       });
+      // The CMS V2 extension is optional. Invalid/missing entries stay out of
+      // the browser store so every existing product keeps its built-in artwork.
+      window.RMRProductMedia?.setAssignments(payload.extensions?.cmsV2?.productMedia || []);
       notify();
     })
     .catch(() => {});
