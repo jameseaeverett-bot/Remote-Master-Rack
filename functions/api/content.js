@@ -1,11 +1,13 @@
 import { contentJson, listPublishedContent } from '../_lib/content.js';
 import { listPublicProductMediaAssignments } from '../_lib/public-product-media.js';
+import { loadPublicStudioDocument } from '../_lib/public-studio.js';
 
 export async function onRequestGet({ env }) {
   try {
     if (!env.CONTENT_DB) return contentJson({ error: 'Published content is temporarily unavailable.' }, 503, true);
     const content = await listPublishedContent(env.CONTENT_DB);
     let productMedia = [];
+    let studio = null;
     try {
       productMedia = await listPublicProductMediaAssignments(env.CONTENT_DB);
     } catch (error) {
@@ -13,9 +15,16 @@ export async function onRequestGet({ env }) {
       // established CMS V1 text contract or built-in website fallback content.
       console.error('RMR public product-media lookup failed.', { type: error?.name || 'Error' });
     }
+    try {
+      studio = await loadPublicStudioDocument(env.CONTENT_DB);
+    } catch (error) {
+      // Studio CMS is a separately authored, optional CMS V2 extension. Its
+      // failure must never remove the established public content contract.
+      console.error('RMR public Studio lookup failed.', { type: error?.name || 'Error' });
+    }
     return contentJson({
       ...content,
-      extensions: { cmsV2: { version: 1, productMedia } },
+      extensions: { cmsV2: { version: 1, productMedia, studio } },
     }, 200, true);
   } catch (error) {
     console.error('RMR public content lookup failed.', { type: error?.name || 'Error' });

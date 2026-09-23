@@ -291,6 +291,8 @@ export const resolvePublicCmsMedia = async (database, mediaId, revision) => {
       AND (
         EXISTS (SELECT 1 FROM cms_product_media_slots p WHERE p.media_id=m.id AND p.publication_state='published')
         OR EXISTS (SELECT 1 FROM cms_studio_hardware_items h WHERE h.media_id=m.id AND h.publication_state='published' AND h.visibility='visible')
+        OR EXISTS (SELECT 1 FROM cms_studio_pages p WHERE p.hero_media_id=m.id AND p.publication_state='published' AND p.visibility='visible')
+        OR EXISTS (SELECT 1 FROM cms_studio_software_groups s WHERE s.media_id=m.id AND s.publication_state='published' AND s.visibility='visible')
       )
     LIMIT 1
   `).bind(mediaId).first();

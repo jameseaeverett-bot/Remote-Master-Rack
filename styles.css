@@ -265,3 +265,39 @@ body[data-page='login-book'] .account-home-link { margin-top: 27px; font-size: 1
 .editor-visual.has-cms-media::after,
 .editor-detail__visual.has-cms-media::after { display: none; }
 .cms-product-media { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: cover; }
+
+/* CMS V2 RMR Studio page. Product imagery remains warm and independent from
+   the aqua interface treatment. */
+.studio-main { max-width: 1260px; width: 100%; margin: auto; padding: clamp(70px, 11vh, 130px) clamp(32px, 7vw, 100px) 30px; }
+.studio-hero { display: grid; grid-template-columns: minmax(0, .9fr) minmax(300px, 1.1fr); gap: clamp(32px, 7vw, 100px); align-items: center; min-height: 420px; }
+.studio-hero h1 { margin: 12px 0 20px; font-size: clamp(52px, 7vw, 94px); }
+.studio-hero__visual, .studio-hardware-card__visual, .studio-software-card__visual { position: relative; overflow: hidden; background: linear-gradient(135deg, #392d1d, #161714 57%, #4a3821); border: 1px solid #bc95574d; }
+.studio-hero__visual { min-height: 390px; border-radius: 14px; }
+.studio-hero__visual::after, .studio-hardware-card__visual::after { content: ''; position: absolute; inset: 14%; border: 1px solid #d2a9627d; border-radius: 49% 9px 49% 9px; transform: rotate(-7deg); }
+.studio-hero__visual span, .studio-hardware-card__mark, .studio-software-card__visual span { position: absolute; z-index: 1; right: 20px; top: 20px; color: #e1bc78; font: 10px var(--font-label); letter-spacing: 1.8px; }
+.studio-section { margin-top: clamp(80px, 13vw, 150px); }
+.studio-section h2 { margin: 9px 0 10px; font: 600 clamp(34px, 4vw, 58px)/1.1 var(--font-display); letter-spacing: -1.7px; }
+.studio-section__intro { max-width: 680px; margin: 0; color: var(--muted); font-size: 15px; line-height: 1.75; }
+.studio-hardware-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; margin-top: 36px; }
+.studio-hardware-card { overflow: hidden; border: 1px solid var(--line); border-radius: 14px; background: #ffffff05; }
+.studio-hardware-card__visual { min-height: 250px; }
+.studio-hardware-card__content { padding: 25px; }
+.studio-hardware-card__content h3, .studio-software-card h3 { margin: 8px 0 12px; font: 600 30px/1.12 var(--font-display); letter-spacing: -.8px; }
+.studio-copy { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.72; }
+.studio-rationale { margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--line); }
+.studio-rationale .eyebrow { margin-bottom: 8px; }
+.studio-video-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; padding: 0 25px 25px; }
+.studio-video { margin: 0; overflow: hidden; border: 1px solid var(--line); border-radius: 9px; background: #0c1110; }
+.studio-video iframe { display: block; width: 100%; aspect-ratio: 16 / 9; border: 0; }
+.studio-video figcaption { display: grid; gap: 4px; padding: 11px 12px; color: var(--muted); font-size: 12px; line-height: 1.5; }
+.studio-video figcaption strong { color: var(--paper); font: 600 13px var(--font-ui); }
+.studio-section--assisted { padding: clamp(32px, 6vw, 64px); border: 1px solid #d2a96242; border-radius: 14px; background: linear-gradient(135deg, #3c311d2b, #ffffff03); }
+.studio-software-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin-top: 32px; }
+.studio-software-card { overflow: hidden; padding: 18px; border: 1px solid var(--line); border-radius: 12px; background: #ffffff05; }
+.studio-software-card__visual { min-height: 130px; margin: -18px -18px 18px; }
+.studio-hero__visual.has-cms-media, .studio-hardware-card__visual.has-cms-media, .studio-software-card__visual.has-cms-media { padding: 0; }
+.studio-hero__visual.has-cms-media::after, .studio-hardware-card__visual.has-cms-media::after { display: none; }
+.studio-hero__visual img, .studio-hardware-card__visual img, .studio-software-card__visual img { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: cover; }
+
+@media (max-width: 900px) { .studio-hero, .studio-hardware-grid { grid-template-columns: 1fr; } .studio-hero__visual { min-height: 260px; } }
+@media (max-width: 760px) { .studio-main { padding: 72px 24px 24px; } .studio-section--assisted { padding: 28px 20px; } .studio-hardware-card__content { padding: 20px; } .studio-video-grid { padding: 0 20px 20px; } }
