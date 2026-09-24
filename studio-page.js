@@ -61,7 +61,7 @@ const renderHardware = (target, items) => {
     const content = element('div', 'studio-hardware-card__content');
     content.append(element('p', 'eyebrow', item.manufacturer || 'RMR STUDIO'), element('h3', '', item.publicName));
     if (item.shortDescription) content.append(element('p', 'studio-copy', item.shortDescription));
-    if (item.chainRationale) { const rationale = element('section', 'studio-rationale'); rationale.append(element('p', 'eyebrow', 'IN THE CHAIN'), element('p', 'studio-copy', item.chainRationale)); content.append(rationale); }
+    if (item.chainRationale) { const rationale = element('section', 'studio-rationale'); rationale.append(element('p', 'eyebrow', 'ROLE IN THE RACK'), element('p', 'studio-copy', item.chainRationale)); content.append(rationale); }
     card.append(art, content);
     const videos = (item.videos || []).filter(video => studioYouTubeId(video.youtubeVideoId));
     if (videos.length) card.append(renderVideos(videos));

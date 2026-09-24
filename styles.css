@@ -276,7 +276,7 @@ body[data-page='login-book'] .account-home-link { margin-top: 27px; font-size: 1
 
 /* CMS V2 RMR Studio page. Product imagery remains warm and independent from
    the aqua interface treatment. */
-.studio-main { max-width: 1260px; width: 100%; margin: auto; padding: clamp(70px, 11vh, 130px) clamp(32px, 7vw, 100px) 30px; }
+.studio-main { max-width: none; width: 100%; margin: 0; padding: clamp(70px, 11vh, 130px) clamp(32px, 6vw, 96px) 30px; }
 .studio-hero { display: grid; grid-template-columns: minmax(0, .9fr) minmax(300px, 1.1fr); gap: clamp(32px, 7vw, 100px); align-items: center; min-height: 420px; }
 .studio-hero h1 { margin: 12px 0 20px; font-size: clamp(52px, 7vw, 94px); }
 .studio-hero__visual, .studio-hardware-card__visual, .studio-software-card__visual { position: relative; overflow: hidden; background: linear-gradient(135deg, #392d1d, #161714 57%, #4a3821); border: 1px solid #bc95574d; }
@@ -294,7 +294,7 @@ body[data-page='login-book'] .account-home-link { margin-top: 27px; font-size: 1
 .studio-copy { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.72; }
 .studio-rationale { margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--line); }
 .studio-rationale .eyebrow { margin-bottom: 8px; }
-.studio-video-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 250px)); justify-content: start; gap: 12px; padding: 0 25px 25px; }
+.studio-video-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 175px), 185px)); justify-content: start; gap: 12px; padding: 0 25px 25px; }
 .studio-video { margin: 0; overflow: hidden; border: 1px solid var(--line); border-radius: 9px; background: #0c1110; }
 .studio-video iframe { display: block; width: 100%; aspect-ratio: 16 / 9; border: 0; }
 .studio-video figcaption { display: grid; gap: 4px; padding: 11px 12px; color: var(--muted); font-size: 12px; line-height: 1.5; }
