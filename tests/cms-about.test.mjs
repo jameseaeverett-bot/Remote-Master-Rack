@@ -6,43 +6,40 @@ import { publicAboutProjection } from '../functions/_lib/public-about.js';
 
 const mediaId = 'media-12345678-1234-1234-1234-123456789abc';
 const document = () => ({
-  hero: { eyebrow: 'ABOUT RMR', heading: 'About RMR', intro: 'A short lead.', mediaId, imageAltText: 'Studio image' },
-  sections: { why: { eyebrow: '01', heading: 'Why RMR', body: 'Paragraph one.\n\nParagraph two.', mediaId: null, imageAltText: '' }, approach: { eyebrow: '02', heading: 'The RMR Approach', body: '', mediaId, imageAltText: 'Approach image' }, story: { eyebrow: '03', heading: 'The Story', body: '', mediaId: null, imageAltText: '' }, future: { eyebrow: '04', heading: 'Where RMR Is Going', body: '', mediaId: null, imageAltText: '' } },
-  cta: { eyebrow: '', heading: 'Continue', body: '', primaryLabel: 'Login & Book', primaryDestination: '/login-book', secondaryLabel: '', secondaryDestination: '' }, visible: true,
+  image: { mediaId, imageAltText: 'Studio image' }, heading: 'About RMR', intro: 'A short lead.', paragraphs: [{ id: 'first', body: 'Paragraph one.' }, { id: 'second', body: 'Paragraph two.' }], profile: { label: 'James Everett Music', url: 'https://jameseverettmusic.example/' }, visible: true,
 });
 
-test('About document is a fixed structured page with optional images and secondary CTA', () => {
+test('About document is an ordered long-form article with one optional image and profile link', () => {
   const result = normaliseAboutDocument(document());
   assert.equal(ABOUT_PAGE_ID, 'about');
-  assert.equal(result.hero.mediaId, mediaId);
-  assert.equal(result.sections[0].body, 'Paragraph one.\n\nParagraph two.');
-  assert.equal(result.sections[1].altText, 'Approach image');
-  assert.equal(result.cta.secondaryLabel, '');
+  assert.equal(result.image.mediaId, mediaId);
+  assert.deepEqual(result.paragraphs.map(item => item.body), ['Paragraph one.', 'Paragraph two.']);
+  assert.equal(result.profile.label, 'James Everett Music');
 });
 
-test('About validation requires alt text only when an existing Media Library image is selected', () => {
-  const missingAlt = document(); missingAlt.sections.approach.imageAltText = '';
+test('About validation retains image accessibility and permits only safe external profile links', () => {
+  const missingAlt = document(); missingAlt.image.imageAltText = '';
   assert.throws(() => normaliseAboutDocument(missingAlt), /alt text/i);
-  const incompleteButton = document(); incompleteButton.cta.primaryDestination = '';
-  assert.throws(() => normaliseAboutDocument(incompleteButton), /provided together/i);
-  const externalDestination = document(); externalDestination.cta.primaryDestination = 'https://example.test';
-  assert.throws(() => normaliseAboutDocument(externalDestination), /RMR website path/i);
+  const incompleteLink = document(); incompleteLink.profile.url = '';
+  assert.throws(() => normaliseAboutDocument(incompleteLink), /provided together/i);
+  const insecureLink = document(); insecureLink.profile.url = 'http://example.test';
+  assert.throws(() => normaliseAboutDocument(insecureLink), /HTTPS/i);
 });
 
-test('About migration uses the existing Content DB and Media Library references', async () => {
-  const migration = await readFile(new URL('../migrations/content/0004_cms_about_page.sql', import.meta.url), 'utf8');
-  assert.match(migration, /CREATE TABLE IF NOT EXISTS cms_about_pages/);
+test('About article migration is additive and retains Media Library references', async () => {
+  const migration = await readFile(new URL('../migrations/content/0005_cms_about_article.sql', import.meta.url), 'utf8');
+  assert.match(migration, /CREATE TABLE IF NOT EXISTS cms_about_articles/);
+  assert.match(migration, /cms_about_article_paragraphs/);
   assert.match(migration, /REFERENCES cms_media_assets/);
 });
 
 test('public About projection exposes only visible presentation fields and revisioned media', () => {
   const source = document();
-  source.hero.media = { id: mediaId, revision: '0123456789abcdef', lifecycleState: 'active', sha256: 'private' };
-  source.sections.why.media = null;
+  source.image.media = { id: mediaId, revision: '0123456789abcdef', lifecycleState: 'active', sha256: 'private' };
   const result = publicAboutProjection(source);
-  assert.equal(result.hero.heading, 'About RMR');
-  assert.deepEqual(result.hero.image, { mediaId, revision: '0123456789abcdef', altText: 'Studio image' });
-  assert.equal(result.sections.why.image, null);
+  assert.equal(result.heading, 'About RMR');
+  assert.deepEqual(result.image, { mediaId, revision: '0123456789abcdef', altText: 'Studio image' });
+  assert.deepEqual(result.paragraphs, ['Paragraph one.', 'Paragraph two.']);
   assert.equal(JSON.stringify(result).includes('sha256'), false);
   assert.equal(publicAboutProjection({ ...source, visible: false }), null);
 });
@@ -50,6 +47,7 @@ test('public About projection exposes only visible presentation fields and revis
 test('About page consumes the existing CMS extension and uses revisioned public media URLs', async () => {
   const page = await readFile(new URL('../about-page.js', import.meta.url), 'utf8');
   assert.match(page, /getExtension\('cmsV2'\).*\.about/);
+  assert.match(page, /about\.paragraphs/);
   assert.match(page, /\/media\/\$\{encodeURIComponent\(asset\.mediaId\)\}/);
   assert.match(page, /encodeURIComponent\(asset\.revision\)/);
   assert.match(page, /target\.replaceChildren/);

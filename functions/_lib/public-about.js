@@ -8,20 +8,11 @@ const publicMedia = (media, altText) => {
   if (!source || !validCmsMediaId(source.id) || !validCmsMediaRevision(source.revision) || !text(altText).trim()) return null;
   return { mediaId: source.id, revision: source.revision, altText: text(altText) };
 };
-const publicSection = section => {
-  const source = object(section);
-  return { eyebrow: text(source?.eyebrow), heading: text(source?.heading), body: text(source?.body), image: publicMedia(source?.media, source?.imageAltText) };
-};
-const publicCta = cta => {
-  const source = object(cta);
-  const link = (label, destination) => text(label).trim() && text(destination).trim() ? { label: text(label), destination: text(destination) } : null;
-  return { eyebrow: text(source?.eyebrow), heading: text(source?.heading), body: text(source?.body), primary: link(source?.primaryLabel, source?.primaryDestination), secondary: link(source?.secondaryLabel, source?.secondaryDestination) };
-};
-
 export const publicAboutProjection = document => {
   const source = object(document);
   if (!source || source.visible !== true) return null;
-  return { hero: { eyebrow: text(source.hero?.eyebrow), heading: text(source.hero?.heading), intro: text(source.hero?.intro), image: publicMedia(source.hero?.media, source.hero?.imageAltText) }, sections: { why: publicSection(source.sections?.why), approach: publicSection(source.sections?.approach), story: publicSection(source.sections?.story), future: publicSection(source.sections?.future) }, cta: publicCta(source.cta) };
+  const link = object(source.profile);
+  return { image: publicMedia(source.image?.media, source.image?.imageAltText), heading: text(source.heading), intro: text(source.intro), paragraphs: Array.isArray(source.paragraphs) ? source.paragraphs.map(item => text(object(item).body)).filter(Boolean) : [], profile: text(link.label).trim() && text(link.url).trim() ? { label: text(link.label), url: text(link.url) } : null };
 };
 
 export const loadPublicAboutDocument = async database => publicAboutProjection(await loadAboutDocument(database));

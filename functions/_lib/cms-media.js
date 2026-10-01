@@ -254,10 +254,11 @@ const referenceCount = async (database, mediaId) => {
       (SELECT COUNT(*) FROM cms_studio_hardware_items WHERE media_id = ?) AS hardware_references,
       (SELECT COUNT(*) FROM cms_studio_pages WHERE hero_media_id = ?) AS studio_page_references,
       (SELECT COUNT(*) FROM cms_studio_software_groups WHERE media_id = ?) AS software_group_references,
-      (SELECT COUNT(*) FROM cms_about_pages WHERE hero_media_id = ? OR why_media_id = ? OR approach_media_id = ? OR story_media_id = ? OR future_media_id = ?) AS about_references
-  `).bind(mediaId, mediaId, mediaId, mediaId, mediaId, mediaId, mediaId, mediaId, mediaId).first();
+      (SELECT COUNT(*) FROM cms_about_pages WHERE hero_media_id = ? OR why_media_id = ? OR approach_media_id = ? OR story_media_id = ? OR future_media_id = ?) AS about_references,
+      (SELECT COUNT(*) FROM cms_about_articles WHERE media_id = ?) AS about_article_references
+  `).bind(mediaId, mediaId, mediaId, mediaId, mediaId, mediaId, mediaId, mediaId, mediaId, mediaId).first();
   return Number(row?.product_references || 0) + Number(row?.hardware_references || 0)
-    + Number(row?.studio_page_references || 0) + Number(row?.software_group_references || 0) + Number(row?.about_references || 0);
+    + Number(row?.studio_page_references || 0) + Number(row?.software_group_references || 0) + Number(row?.about_references || 0) + Number(row?.about_article_references || 0);
 };
 
 export const retireCmsMedia = async ({ database, bucket, mediaId, subject, purge = false, now = new Date() }) => {
@@ -295,6 +296,7 @@ export const resolvePublicCmsMedia = async (database, mediaId, revision) => {
         OR EXISTS (SELECT 1 FROM cms_studio_pages p WHERE p.hero_media_id=m.id AND p.publication_state='published' AND p.visibility='visible')
         OR EXISTS (SELECT 1 FROM cms_studio_software_groups s WHERE s.media_id=m.id AND s.publication_state='published' AND s.visibility='visible')
         OR EXISTS (SELECT 1 FROM cms_about_pages a WHERE a.publication_state='published' AND a.visibility='visible' AND (a.hero_media_id=m.id OR a.why_media_id=m.id OR a.approach_media_id=m.id OR a.story_media_id=m.id OR a.future_media_id=m.id))
+        OR EXISTS (SELECT 1 FROM cms_about_articles a WHERE a.publication_state='published' AND a.visibility='visible' AND a.media_id=m.id)
       )
     LIMIT 1
   `).bind(mediaId).first();
