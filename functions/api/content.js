@@ -1,6 +1,7 @@
 import { contentJson, listPublishedContent } from '../_lib/content.js';
 import { listPublicProductMediaAssignments } from '../_lib/public-product-media.js';
 import { loadPublicStudioDocument } from '../_lib/public-studio.js';
+import { loadPublicAboutDocument } from '../_lib/public-about.js';
 
 export async function onRequestGet({ env }) {
   try {
@@ -8,6 +9,7 @@ export async function onRequestGet({ env }) {
     const content = await listPublishedContent(env.CONTENT_DB);
     let productMedia = [];
     let studio = null;
+    let about = null;
     try {
       productMedia = await listPublicProductMediaAssignments(env.CONTENT_DB);
     } catch (error) {
@@ -22,9 +24,16 @@ export async function onRequestGet({ env }) {
       // failure must never remove the established public content contract.
       console.error('RMR public Studio lookup failed.', { type: error?.name || 'Error' });
     }
+    try {
+      about = await loadPublicAboutDocument(env.CONTENT_DB);
+    } catch (error) {
+      // About is another optional CMS V2 document. Its absence or a migration
+      // mismatch must never remove the established CMS V1 public contract.
+      console.error('RMR public About lookup failed.', { type: error?.name || 'Error' });
+    }
     return contentJson({
       ...content,
-      extensions: { cmsV2: { version: 1, productMedia, studio } },
+      extensions: { cmsV2: { version: 1, productMedia, studio, about } },
     }, 200, true);
   } catch (error) {
     console.error('RMR public content lookup failed.', { type: error?.name || 'Error' });

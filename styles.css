@@ -298,6 +298,19 @@ body[data-page='login-book'] .account-home-link { margin-top: 27px; font-size: 1
 .studio-video { margin: 0; overflow: hidden; border: 1px solid var(--line); border-radius: 9px; background: #0c1110; }
 .studio-video iframe { display: block; width: 100%; aspect-ratio: 16 / 9; border: 0; }
 .studio-video figcaption { display: grid; gap: 4px; padding: 11px 12px; color: var(--muted); font-size: 12px; line-height: 1.5; }
+
+/* CMS V2 About document. These intentionally conservative rules leave final
+   art direction for a later public-page design pass. */
+.about-hero,.about-section,.about-cta { width:min(1060px,100%); margin-inline:auto; }
+.about-hero { display:grid; grid-template-columns:minmax(0,1fr) minmax(280px,.9fr); gap:clamp(28px,6vw,82px); align-items:center; min-height:440px; }
+.about-hero h1 { margin:10px 0 18px; font-size:clamp(50px,7vw,88px); }
+.about-section { display:grid; grid-template-columns:minmax(0,1fr) minmax(240px,.8fr); gap:clamp(24px,5vw,68px); align-items:start; padding:clamp(42px,7vw,86px) 0; border-top:1px solid var(--line); }
+.about-section h2,.about-cta h2 { margin:8px 0 14px; font:600 clamp(27px,3vw,42px)/1.1 var(--font-display); }
+.about-section__body { margin:0; color:var(--muted); white-space:pre-line; line-height:1.75; }
+.about-media { display:block; width:100%; max-height:480px; object-fit:contain; object-position:center; background:#0b1010; border:1px solid var(--line); border-radius:10px; }
+.about-cta { margin-top:clamp(18px,4vw,56px); padding:clamp(32px,5vw,64px); border:1px solid var(--line); border-radius:12px; background:var(--surface); }
+.about-cta__actions { display:flex; flex-wrap:wrap; gap:12px; margin-top:22px; }
+@media(max-width:760px){.about-hero,.about-section{grid-template-columns:1fr;min-height:0}.about-hero{padding-top:72px}.about-section{gap:22px}.about-media{max-height:360px}}
 .studio-video figcaption strong { color: var(--paper); font: 600 13px var(--font-ui); }
 .studio-section--assisted { padding: clamp(32px, 6vw, 64px); border: 1px solid #d2a96242; border-radius: 14px; background: linear-gradient(135deg, #3c311d2b, #ffffff03); }
 .studio-software-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin-top: 32px; }

@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 import { ABOUT_PAGE_ID, normaliseAboutDocument } from '../functions/_lib/cms-about.js';
+import { publicAboutProjection } from '../functions/_lib/public-about.js';
 
 const mediaId = 'media-12345678-1234-1234-1234-123456789abc';
 const document = () => ({
@@ -32,4 +33,24 @@ test('About migration uses the existing Content DB and Media Library references'
   const migration = await readFile(new URL('../migrations/content/0004_cms_about_page.sql', import.meta.url), 'utf8');
   assert.match(migration, /CREATE TABLE IF NOT EXISTS cms_about_pages/);
   assert.match(migration, /REFERENCES cms_media_assets/);
+});
+
+test('public About projection exposes only visible presentation fields and revisioned media', () => {
+  const source = document();
+  source.hero.media = { id: mediaId, revision: '0123456789abcdef', lifecycleState: 'active', sha256: 'private' };
+  source.sections.why.media = null;
+  const result = publicAboutProjection(source);
+  assert.equal(result.hero.heading, 'About RMR');
+  assert.deepEqual(result.hero.image, { mediaId, revision: '0123456789abcdef', altText: 'Studio image' });
+  assert.equal(result.sections.why.image, null);
+  assert.equal(JSON.stringify(result).includes('sha256'), false);
+  assert.equal(publicAboutProjection({ ...source, visible: false }), null);
+});
+
+test('About page consumes the existing CMS extension and uses revisioned public media URLs', async () => {
+  const page = await readFile(new URL('../about-page.js', import.meta.url), 'utf8');
+  assert.match(page, /getExtension\('cmsV2'\).*\.about/);
+  assert.match(page, /\/media\/\$\{encodeURIComponent\(asset\.mediaId\)\}/);
+  assert.match(page, /encodeURIComponent\(asset\.revision\)/);
+  assert.match(page, /target\.replaceChildren/);
 });
